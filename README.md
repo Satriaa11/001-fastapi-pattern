@@ -9,7 +9,7 @@ Todo list REST API built with FastAPI using Hexagonal Architecture (Clean Archit
 - 🏗️ Clean architecture with hexagonal design
 - ⚡ FastAPI with Pydantic models
 - 🔐 JWT authentication for login/register
-- 📦 UV for virtual environment management
+- 📦 UV for dependency and environment management
 - 🗄️ SQLite database with SQLAlchemy
 - 🔄 Database migrations with Alembic
 
@@ -31,10 +31,12 @@ app/
 │   ├── models.py        # SQLAlchemy models
 │   ├── user_repository.py
 │   └── todo_repository.py
-└── interfaces/     # API interfaces and controllers
-    ├── schemas.py       # Pydantic schemas
-    ├── auth_controller.py
-    └── todo_controller.py
+├── interfaces/     # API interfaces and controllers
+│   ├── schemas.py       # Pydantic schemas
+│   ├── auth_controller.py
+│   └── todo_controller.py
+├── cli.py          # CLI commands for running the application
+└── main.py         # FastAPI application entry point
 ```
 
 ## Quick Setup
@@ -60,45 +62,22 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Or visit: https://docs.astral.sh/uv/getting-started/installation/
 
-### Automatic Setup
+### Setup
 
-**Windows:**
-
-```batch
-# Run the PowerShell setup script
-powershell -ExecutionPolicy Bypass -File setup.ps1
-```
-
-**Linux/Mac:**
+1. **Clone the repository:**
 
 ```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### Manual Setup
-
-1. **Create virtual environment with UV:**
-
-```bash
-uv venv
+git clone https://github.com/Satriaa11/001-fastapi-pattern.git
+cd 001-fastapi-pattern
 ```
 
 2. **Install dependencies with UV:**
 
 ```bash
-uv pip install -e .
+uv sync
 ```
 
-3. **Create .env file:**
-
-```bash
-# Copy example and edit as needed
-copy .env.example .env  # Windows
-cp .env.example .env    # Linux/Mac
-```
-
-4. **Create database tables:**
+3. **Create database tables:**
 
 ```bash
 uv run python create_db.py
@@ -106,53 +85,24 @@ uv run python create_db.py
 
 ### Running the Application
 
-#### Option 1: Using UV (Recommended)
+#### Using UV Scripts (Recommended)
 
 ```bash
+# Development mode with hot reload
+uv run dev
+
 # Production mode
-uv run python run.py
-
-# Development mode with hot reload
-uv run uvicorn app.main:app --reload
+uv run start
 ```
 
-#### Option 2: Using batch scripts
-
-**Windows:**
-
-```batch
-# Setup (first time only)
-powershell -ExecutionPolicy Bypass -File setup.ps1
-
-# Start application
-start.bat
-
-# Development mode with hot reload
-dev.bat
-```
-
-**Linux/Mac:**
+#### Alternative: Direct UV commands
 
 ```bash
-# Setup (first time only)
-chmod +x setup.sh && ./setup.sh
+# Development mode
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Start application
-chmod +x start.sh && ./start.sh
-
-# Development mode with hot reload
-chmod +x dev.sh && ./dev.sh
-```
-
-#### Option 3: Traditional way
-
-```bash
-# Activate virtual environment
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-
-# Run application
-python run.py
+# Production mode
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## API Documentation
@@ -224,10 +174,10 @@ curl -X POST "http://localhost:8000/todos/" \
 
 ## Testing
 
-Run tests:
+Run tests with UV:
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ## Project Structure Explanation
@@ -254,40 +204,36 @@ pytest
 
 - **Controllers**: FastAPI route handlers
 - **Schemas**: Pydantic models for request/response
-- **Dependencies**: FastAPI dependency injection
 
 ## Environment Variables
 
-Create a `.env` file with:
+The application uses these default values (no .env file needed for basic usage):
 
 ```env
-SECRET_KEY=your-super-secret-key-here
+SECRET_KEY=your-super-secret-key-here-change-in-production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 DATABASE_URL=sqlite:///./todolist.db
 DEBUG=True
 ```
 
+For production, create a `.env` file and override these values.
+
 ## Development
 
 ### Database Migrations
 
-Initialize Alembic (first time):
+The project uses Alembic for database migrations:
 
 ```bash
-alembic init alembic
-```
+# Create a new migration
+uv run alembic revision --autogenerate -m "Description of changes"
 
-Create migration:
+# Apply migrations
+uv run alembic upgrade head
 
-```bash
-alembic revision --autogenerate -m "Create tables"
-```
-
-Apply migration:
-
-```bash
-alembic upgrade head
+# Check migration status
+uv run alembic current
 ```
 
 ### Adding New Features
@@ -298,6 +244,19 @@ alembic upgrade head
 4. **Add Service Logic**: Create in `application/`
 5. **Add API Endpoints**: Create controller in `interfaces/`
 6. **Add Tests**: Create test files in `tests/`
+
+## Dependencies
+
+This project uses:
+
+- **FastAPI** - Modern, fast web framework
+- **Uvicorn** - ASGI server
+- **SQLAlchemy** - Database ORM
+- **Alembic** - Database migrations
+- **Pydantic** - Data validation
+- **python-jose** - JWT token handling
+- **passlib** - Password hashing
+- **pytest** - Testing framework
 
 ## Contributing
 
